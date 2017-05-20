@@ -2,4 +2,4 @@ torch
 numpy
 rdkit
 pandas
-progressbar
+progressbar2

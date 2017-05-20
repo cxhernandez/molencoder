@@ -1,6 +1,6 @@
 import os
 import argparse
-import urllib
+import urllib.request
 import pandas
 import tempfile
 from progressbar import ProgressBar, Percentage, Bar, ETA, FileTransferSpeed
@@ -51,7 +51,7 @@ def main():
             progress.start()
         progress.update(min(count * blockSize, totalSize))
 
-    urllib.urlretrieve(uri, fd.name, reporthook = update)
+    urllib.request.urlretrieve(uri, fd.name, reporthook = update)
     if dataset == 'zinc12':
         df = pandas.read_csv(fd.name, delimiter = '\t')
         df = df.rename(columns={'SMILES':'structure'})
