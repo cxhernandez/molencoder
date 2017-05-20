@@ -4,6 +4,7 @@ from argparse import ArgumentDefaultsHelpFormatter
 def func(args, parser):
     from itertools import chain
 
+    import os.path
     import torch
     import torch.optim as optim
     from torch.utils.data import TensorDataset, DataLoader
@@ -32,7 +33,8 @@ def func(args, parser):
         encoder.cuda()
         decoder.cuda()
 
-    if args.cont:
+    if args.cont and os.path.isfile('checkpoint.pth.tar'):
+        print('Continuing from previous checkpoint..')
         checkpoint = torch.load('checkpoint.pth.tar')
         encoder.load_state_dict(checkpoint['encoder'])
         decoder.load_state_dict(checkpoint['decoder'])
