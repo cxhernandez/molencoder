@@ -26,6 +26,8 @@ def get_arguments():
     if args.dataset and args.dataset in DEFAULTS.keys():
         uri = DEFAULTS[args.dataset]['uri']
         outfile = args.outfile or DEFAULTS[args.dataset]['outfile']
+        if not os.path.exists('data'):
+            os.makedirs('data')
     elif args.dataset not in DEFAULTS.keys():
         parser.error("Dataset %s unknown. Valid choices are: %s" % (args.dataset, ", ".join(DEFAULTS.keys())))
     else:
