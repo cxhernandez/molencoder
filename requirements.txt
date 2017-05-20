@@ -1,5 +1,4 @@
 torch
 numpy
-rdkit
 pandas
 progressbar2
