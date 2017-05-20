@@ -34,7 +34,7 @@ def func(args, parser):
         decoder.cuda()
 
     if args.cont and os.path.isfile('checkpoint.pth.tar'):
-        print('Continuing from previous checkpoint..')
+        print('Continuing from previous checkpoint...')
         checkpoint = torch.load('checkpoint.pth.tar')
         encoder.load_state_dict(checkpoint['encoder'])
         decoder.load_state_dict(checkpoint['decoder'])
