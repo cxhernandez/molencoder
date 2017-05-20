@@ -72,8 +72,6 @@ def configure_parser(sub_parsers):
     help = 'Download SMILES datasets'
     p = sub_parsers.add_parser('download', description=help, help=help,
                                formatter_class=ArgumentDefaultsHelpFormatter)
-    parser = argparse.ArgumentParser(
-        description='Download ChEMBL entries and convert them to input for preprocessing')
     p.add_argument('--dataset', type=str,
                    help="%s  ...or specify your own --uri" % ",".join(DEFAULTS.keys()))
     p.add_argument('--uri', type=str,
