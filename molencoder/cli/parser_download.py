@@ -91,7 +91,7 @@ def func(args, parser):
                               train_test_split(smiles.index, test_size=0.20))
 
     h5f = h5py.File(outfile, 'w')
-    h5f.create_dataset('charset', data=charset)
+    h5f.create_dataset('charset', data=[c.encode('utf-8') for c in charset])
 
     def create_chunk_dataset(h5file, dataset_name, dataset, dataset_shape,
                              chunk_size=1000):
