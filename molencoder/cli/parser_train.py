@@ -2,9 +2,21 @@ from argparse import ArgumentDefaultsHelpFormatter
 
 
 def func(args, parser):
-    from rdkit import Chem
+    import torch.optim as optim
 
     from ..models import MolEncoder, MolDecoder
+    from ..utils import load_dataset, train
+
+    data_train, data_test, charset = load_dataset(args.dataset)
+
+
+    encoder = MolEncoder(c=len(charset))
+    decoder = MolDecoder(c=len(charset))
+
+    for i in range(args.num_epochs):
+        train(loader_train, encoder, decoder, optimizer, dtype)
+
+
 
 def configure_parser(sub_parsers):
     help = 'Train autoencoder'

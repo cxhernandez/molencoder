@@ -1,3 +1,4 @@
+import h5py
 import torch.nn as nn
 
 
@@ -15,7 +16,7 @@ class Repeat(nn.Module):
 
     def forward(self, x):
         size = (1,) + tuple(x.size())
-        x_expanded =  x.view(*size)
+        x_expanded = x.view(*size)
         n = [1 for _ in size]
         n[0] = self.rep
         return x_expanded.repeat(*n)
@@ -33,15 +34,18 @@ class TimeDistributed(nn.Module):
             return self.module(x)
 
         # Squash samples and timesteps into a single axis
-        x_reshape = x.contiguous().view(-1, x.size(-1))  # (samples * timesteps, input_size)
+        # (samples * timesteps, input_size)
+        x_reshape = x.contiguous().view(-1, x.size(-1))
 
         y = self.module(x_reshape)
 
         # We have to reshape Y
         if self.batch_first:
-            y = y.contiguous().view(x.size(1), -1, y.size(-1))  # (samples, timesteps, output_size)
+            # (samples, timesteps, output_size)
+            y = y.contiguous().view(x.size(1), -1, y.size(-1))
         else:
-            y = y.view(-1, x.size(1), y.size(-1))  # (timesteps, samples, output_size)
+            # (timesteps, samples, output_size)
+            y = y.view(-1, x.size(1), y.size(-1))
 
         return y
 
@@ -49,3 +53,35 @@ class TimeDistributed(nn.Module):
 def reset(m):
     if hasattr(m, 'reset_parameters'):
         m.reset_parameters()
+
+
+def train(loader_train, encoder, decoder, optimizer, dtype):
+    model.train()
+    for t, x in enumerate(loader_train):
+        x_var = Variable(x.type(dtype))
+
+        y_var = encoder(x_var)
+        z_var = decoder(y_var)
+
+        loss = encoder.vae_loss(x_var, z_var.detach())
+        if (t + 1) % print_every == 0:
+            print('t = %d, loss = %.4f' % (t + 1, loss.data[0]))
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+
+def load_dataset(filename, split=True):
+    h5f = h5py.File(filename, 'r')
+    if split:
+        data_train = h5f['data_train'][:]
+    else:
+        data_train = None
+    data_test = h5f['data_test'][:]
+    charset = h5f['charset'][:]
+    h5f.close()
+    if split:
+        return (data_train, data_test, charset)
+    else:
+        return (data_test, charset)

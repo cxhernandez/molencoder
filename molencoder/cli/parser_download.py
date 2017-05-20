@@ -85,8 +85,8 @@ def func(args, parser):
     del df
 
     featurizer = OneHotFeaturizer()
-    one_hot = featurizer.featurize(smiles)
-
+    charset = featurizer._create_charset(smiles)
+    featurizer.charset = charset
     train_idx, test_idx = map(np.array,
                               train_test_split(smiles.index, test_size=0.20))
 
@@ -100,12 +100,12 @@ def func(args, parser):
                                                       list(dataset_shape[1:]))
                                          )
         for (chunk_ixs, chunk) in chunk_iterator(dataset):
-            new_data[chunk_ixs, ...] = chunk
+            new_data[chunk_ixs, ...] = featurizer.featurize(chunk)
 
     print('Saving Dataset...')
-    create_chunk_dataset(h5f, 'data_train', one_hot[train_idx],
+    create_chunk_dataset(h5f, 'data_train', train_idx,
                          (len(train_idx), 120, len(charset)))
-    create_chunk_dataset(h5f, 'data_test', one_hot[test_idx],
+    create_chunk_dataset(h5f, 'data_test', test_idx,
                          (len(test_idx), 120, len(charset)))
 
     h5f.close()
