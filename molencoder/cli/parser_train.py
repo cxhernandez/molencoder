@@ -40,7 +40,7 @@ def func(args, parser):
         decoder.load_state_dict(checkpoint['decoder'])
         optimizer = optim.Adam(chain(encoder.parameters(),
                                      decoder.parameters()))
-        decoder.load_state_dict(checkpoint['optimizer'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
         best_loss = checkpoint['avg_val_loss']
     else:
         optimizer = optim.Adam(chain(encoder.parameters(),
