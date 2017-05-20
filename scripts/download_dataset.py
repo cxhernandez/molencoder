@@ -54,6 +54,8 @@ def main():
         progress.update(min(count * blockSize, totalSize))
 
     urllib.request.urlretrieve(uri, fd.name, reporthook = update)
+
+    print('Saving to HDF5...')
     if dataset == 'zinc12':
         df = pandas.read_csv(fd.name, delimiter = '\t')
         df = df.rename(columns={'SMILES':'structure'})
@@ -62,10 +64,11 @@ def main():
         df = pandas.read_table(fd.name,compression='gzip')
         df = df.rename(columns={'canonical_smiles':'structure'})
         df.to_hdf(outfile, 'table', format = 'table', data_columns = True)
-        pass
     else:
         df = pandas.read_csv(fd.name, delimiter = '\t')
         df.to_hdf(outfile, 'table', format = 'table', data_columns = True)
+
+    print("Done!")
 
 if __name__ == '__main__':
     main()
