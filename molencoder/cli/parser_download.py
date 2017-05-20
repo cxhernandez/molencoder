@@ -75,8 +75,7 @@ def configure_parser(sub_parsers):
     parser = argparse.ArgumentParser(
         description='Download ChEMBL entries and convert them to input for preprocessing')
     p.add_argument('--dataset', type=str,
-                   help="%s  ...or specify your own --uri" % ",
-                   ".join(DEFAULTS.keys()))
+                   help="%s  ...or specify your own --uri" % ",".join(DEFAULTS.keys()))
     p.add_argument('--uri', type=str,
                    help='URI to download ChEMBL entries from')
     p.add_argument('--outfile', type=str, help='Output file name')
