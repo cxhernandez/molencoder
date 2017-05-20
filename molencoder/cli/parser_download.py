@@ -102,6 +102,7 @@ def func(args, parser):
         for (chunk_ixs, chunk) in chunk_iterator(dataset):
             new_data[chunk_ixs, ...] = chunk
 
+    print('Saving Dataset...')
     create_chunk_dataset(h5f, 'data_train', one_hot[train_idx],
                          (len(train_idx), 120, len(charset)))
     create_chunk_dataset(h5f, 'data_test', one_hot[test_idx],
