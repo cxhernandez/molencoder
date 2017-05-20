@@ -2,6 +2,8 @@ from argparse import ArgumentDefaultsHelpFormatter
 
 
 def func(args, parser):
+    from itertools import chain
+
     import torch
     import torch.optim as optim
     from torch.utils.data import TensorDataset, DataLoader
@@ -29,7 +31,7 @@ def func(args, parser):
         encoder.cuda()
         decoder.cuda()
 
-    optimizer = optim.Adam(encoder.parameters() + decoder.parameters(),
+    optimizer = optim.Adam(chain(encoder.parameters(), decoder.parameters()),
                            lr=args.learning_rate)
     for i in range(args.num_epochs):
         train_model(train_loader, encoder, decoder, optimizer, dtype)
