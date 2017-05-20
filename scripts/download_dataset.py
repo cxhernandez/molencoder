@@ -46,8 +46,8 @@ def main():
     progress = ProgressBar(widgets=[Percentage(), ' ', Bar(), ' ', ETA(), ' ', FileTransferSpeed()])
 
     def update(count, blockSize, totalSize):
-        if progress.maxval is None:
-            progress.maxval = totalSize
+        if progress.max_value is None:
+            progress.max_value = totalSize
             progress.start()
         progress.update(min(count * blockSize, totalSize))
 
