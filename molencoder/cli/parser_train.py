@@ -72,8 +72,8 @@ def configure_parser(sub_parsers):
     p.add_argument('--learning-rate', type=float, help="Learning rate",
                    default=1E-4)
     p.add_argument('--batch-size', type=int, help="Batch size", default=100)
-    p.add_argument('--cuda', type=bool, help="Use GPU acceleration",
-                   default=False)
-    p.add_argument('--cont', type=bool, help="Continue from saved state",
-                   default=False)
+    p.add_argument('--cuda', help="Use GPU acceleration",
+                   action='store_true')
+    p.add_argument('--cont', help="Continue from saved state",
+                   action='store_true')
     p.set_defaults(func=func)
