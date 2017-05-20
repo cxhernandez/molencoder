@@ -29,4 +29,9 @@ setup(
     packages=find_packages(),
     zip_safe=True,
     install_requires=readlist('requirements.txt'),
+    entry_points={
+        'console_scripts': [
+            '%s = %s.cli.main:main' % (NAME, NAME),
+        ],
+    },
 )
