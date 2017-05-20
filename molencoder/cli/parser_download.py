@@ -21,13 +21,13 @@ def func(args, parser):
     import urllib.request
     import tempfile
 
+    import h5py
     import numpy as np
     import pandas
     from sklearn.model_selection import train_test_split
     from progressbar import (ProgressBar, Percentage, Bar,
                              ETA, FileTransferSpeed)
 
-    from rdkit import Chem
     from ..featurizers import OneHotFeaturizer
 
     uri, outfile, dataset = args.uri, args.outfile, args.dataset
