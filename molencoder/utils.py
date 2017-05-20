@@ -1,5 +1,6 @@
 import h5py
 import torch.nn as nn
+from torch.autograd import Variable
 
 
 class Flatten(nn.Module):
@@ -55,9 +56,11 @@ def reset(m):
         m.reset_parameters()
 
 
-def train(loader_train, encoder, decoder, optimizer, dtype):
-    model.train()
-    for t, x in enumerate(loader_train):
+def train_model(train_loader, encoder, decoder, optimizer, dtype,
+                print_every=100):
+    encoder.train()
+    decoder.train()
+    for t, x in enumerate(train_loader):
         x_var = Variable(x.type(dtype))
 
         y_var = encoder(x_var)
