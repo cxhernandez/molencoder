@@ -93,13 +93,21 @@ def func(args, parser):
     h5f = h5py.File(outfile, 'w')
     h5f.create_dataset('charset', data=[c.encode('utf-8') for c in charset])
 
+    def chunk_iterator(dataset, chunk_size=1000):
+        chunk_indices = np.array_split(np.arange(len(dataset)),
+                                        len(dataset)/chunk_size)
+        for chunk_ixs in chunk_indices:
+            chunk = dataset[chunk_ixs]
+            yield (chunk_ixs, chunk)
+        raise StopIteration
+
     def create_chunk_dataset(h5file, dataset_name, dataset, dataset_shape,
                              chunk_size=1000):
         new_data = h5file.create_dataset(dataset_name, dataset_shape,
                                          chunks=tuple([chunk_size] +
                                                       list(dataset_shape[1:]))
                                          )
-        for (chunk_ixs, chunk) in chunk_iterator(dataset):
+        for (chunk_ixs, chunk) in chunk_iterator(dataset, chunk_size=chunk_size):
             new_data[chunk_ixs, ...] = featurizer.featurize([smiles[i] for i in chunk])
 
     print('Saving Dataset...')
