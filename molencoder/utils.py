@@ -1,4 +1,7 @@
 import h5py
+import shutil
+
+import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
@@ -78,6 +81,23 @@ def train_model(train_loader, encoder, decoder, optimizer, dtype,
         optimizer.step()
 
 
+def validate_model(val_loader, encoder, decoder, dtype):
+    encoder.eval()
+    decoder.eval()
+
+    avg_val_loss = 0.
+    for t, (x, y) in enumerate(val_loader):
+        x_var = Variable(x.type(dtype))
+
+        y_var = encoder(x_var)
+        z_var = decoder(y_var)
+
+        avg_val_loss += encoder.vae_loss(x_var, z_var.detach())
+    avg_val_loss /= t
+    print('average validation loss: %.4f' % avg_val_loss[0])
+    return avg_val_loss
+
+
 def load_dataset(filename, split=True):
     h5f = h5py.File(filename, 'r')
     if split:
@@ -91,3 +111,16 @@ def load_dataset(filename, split=True):
         return (data_train, data_test, charset)
     else:
         return (data_test, charset)
+
+
+def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+    torch.save(state, filename)
+    if is_best:
+        shutil.copyfile(filename, 'model_best.pth.tar')
+
+
+def adjust_learning_rate(optimizer, epoch, tau=30, lr_init=1E-4):
+    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
+    lr = lr_init * (0.1 ** (epoch // tau))
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr

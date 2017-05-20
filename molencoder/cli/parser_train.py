@@ -9,17 +9,19 @@ def func(args, parser):
     from torch.utils.data import TensorDataset, DataLoader
 
     from ..models import MolEncoder, MolDecoder
-    from ..utils import load_dataset, train_model
+    from ..utils import (load_dataset, train_model, adjust_learning_rate,
+                         save_checkpoint, validate_model)
 
-    data_train, data_test, charset = load_dataset(args.dataset)
+    data_train, data_val, charset = load_dataset(args.dataset)
 
     data_train = torch.FloatTensor(data_train)
-    # data_test = torch.FloatTensor(data_test)
+    data_val = torch.FloatTensor(data_val)
+
     train = TensorDataset(data_train, torch.zeros(data_train.size()[0]))
     train_loader = DataLoader(train, batch_size=args.batch_size, shuffle=True)
 
-    # test = TensorDataset(data_test, torch.zeros(data_test.size()[0]))
-    # test_loader = DataLoader(test, batch_size=args.batch_size, shuffle=True)
+    val = TensorDataset(data_val, torch.zeros(data_val.size()[0]))
+    val_loader = DataLoader(val, batch_size=args.batch_size, shuffle=True)
 
     dtype = torch.FloatTensor
     encoder = MolEncoder(c=len(charset))
@@ -30,10 +32,21 @@ def func(args, parser):
         encoder.cuda()
         decoder.cuda()
 
-    optimizer = optim.Adam(chain(encoder.parameters(), decoder.parameters()),
-                           lr=args.learning_rate)
-    for i in range(args.num_epochs):
+    optimizer = optim.Adam(chain(encoder.parameters(), decoder.parameters()))
+    best_loss = 1E6
+    for epoch in range(args.num_epochs):
+        adjust_learning_rate(optimizer, epoch, lr_init=args.learning_rate)
         train_model(train_loader, encoder, decoder, optimizer, dtype)
+
+        avg_val_loss = validate_model(train_loader, encoder, decoder, dtype)
+        is_best = avg_val_loss < best_loss
+        save_checkpoint({
+            'epoch': epoch,
+            'encoder_dict': encoder.state_dict(),
+            'decoder_dict': decoder.state_dict(),
+            'avg_val_loss': avg_val_loss,
+            'optimizer': optimizer.state_dict(),
+        }, is_best)
 
 
 def configure_parser(sub_parsers):
