@@ -2,7 +2,9 @@ from argparse import ArgumentDefaultsHelpFormatter
 
 
 def func(args, parser):
-    pass
+    from rdkit import Chem
+
+    from ..models import MolEncoder, MolDecoder
 
 def configure_parser(sub_parsers):
     help = 'Train autoencoder'

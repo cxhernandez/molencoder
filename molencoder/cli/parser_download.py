@@ -11,16 +11,24 @@ DEFAULTS = {
     }
 }
 
+MAX_NUM_ROWS = 500000
+
 
 def func(args, parser):
     import os
     import sys
     import argparse
     import urllib.request
-    import pandas
     import tempfile
+
+    import numpy as np
+    import pandas
+    from sklearn.model_selection import train_test_split
     from progressbar import (ProgressBar, Percentage, Bar,
                              ETA, FileTransferSpeed)
+
+    from rdkit import Chem
+    from ..featurizers import OneHotFeaturizer
 
     uri, outfile, dataset = args.uri, args.outfile, args.dataset
 
@@ -30,15 +38,16 @@ def func(args, parser):
         if not os.path.exists('data'):
             os.makedirs('data')
     elif args.dataset not in DEFAULTS.keys():
-        parser.error("Dataset %s unknown. Valid choices are: %s" % (dataset, ", ".join(DEFAULTS.keys())))
+        parser.error("Dataset %s unknown. Valid choices are: %s" %
+                     (dataset, ", ".join(DEFAULTS.keys())))
 
     if uri is None:
-        parser.error("You must choose either a known --dataset or provide a --uri and --outfile.")
+        parser.error(
+            "You must choose either a known --dataset or provide a --uri and --outfile.")
         sys.exit(1)
     if outfile is None:
         parser.error("You must provide an --outfile if using a custom --uri.")
         sys.exit(1)
-
 
     fd = tempfile.NamedTemporaryFile()
     progress = ProgressBar(widgets=[Percentage(), ' ', Bar(), ' ', ETA(),
@@ -50,20 +59,55 @@ def func(args, parser):
             progress.start()
         progress.update(min(count * blockSize, totalSize))
 
+    print('Downloading Dataset...')
     urllib.request.urlretrieve(uri, fd.name, reporthook=update)
 
-    print('Saving to HDF5...')
+    print('Loading Dataset...')
     if dataset == 'zinc12':
         df = pandas.read_csv(fd.name, delimiter='\t')
         df = df.rename(columns={'SMILES': 'structure'})
-        df.to_hdf(outfile, 'table', format='table', data_columns=True)
     elif dataset == 'chembl22':
         df = pandas.read_table(fd.name, compression='gzip')
         df = df.rename(columns={'canonical_smiles': 'structure'})
-        df.to_hdf(outfile, 'table', format='table', data_columns=True)
     else:
         df = pandas.read_csv(fd.name, delimiter='\t')
-        df.to_hdf(outfile, 'table', format='table', data_columns=True)
+
+    keys = df[args.smiles_column].map(len) < 121
+
+    if MAX_NUM_ROWS < len(keys):
+        df = df[keys].sample(n=MAX_NUM_ROWS)
+    else:
+        df = df[keys]
+
+    print('Processing Dataset...')
+    smiles = df[args.smiles_column]
+
+    del df
+
+    featurizer = OneHotFeaturizer()
+    one_hot = featurizer.featurize(smiles)
+
+    train_idx, test_idx = map(np.array,
+                              train_test_split(smiles.index, test_size=0.20))
+
+    h5f = h5py.File(outfile, 'w')
+    h5f.create_dataset('charset', data=charset)
+
+    def create_chunk_dataset(h5file, dataset_name, dataset, dataset_shape,
+                             chunk_size=1000):
+        new_data = h5file.create_dataset(dataset_name, dataset_shape,
+                                         chunks=tuple([chunk_size] +
+                                                      list(dataset_shape[1:]))
+                                         )
+        for (chunk_ixs, chunk) in chunk_iterator(dataset):
+            new_data[chunk_ixs, ...] = chunk
+
+    create_chunk_dataset(h5f, 'data_train', one_hot[train_idx],
+                         (len(train_idx), 120, len(charset)))
+    create_chunk_dataset(h5f, 'data_test', one_hot[test_idx],
+                         (len(test_idx), 120, len(charset)))
+
+    h5f.close()
 
     print("Done!")
 
@@ -77,4 +121,6 @@ def configure_parser(sub_parsers):
     p.add_argument('--uri', type=str,
                    help='URI to download ChEMBL entries from')
     p.add_argument('--outfile', type=str, help='Output file name')
+    p.add_argument('--smiles_column', type=str, default='structure',
+                   help="Name of the column that contains the SMILES strings.")
     p.set_defaults(func=func)
