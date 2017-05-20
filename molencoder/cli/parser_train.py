@@ -25,7 +25,7 @@ def func(args, parser):
     encoder = MolEncoder(c=len(charset))
     decoder = MolDecoder(c=len(charset))
 
-    if args.cuda:
+    if args.cuda > 0:
         dtype = torch.cuda.FloatTensor
         encoder.cuda()
         decoder.cuda()
@@ -45,8 +45,8 @@ def configure_parser(sub_parsers):
     p.add_argument('--num-epochs', type=int, help="Number of epochs",
                    default=1)
     p.add_argument('--learning-rate', type=float, help="Learning rate",
-                   default=1E-3)
-    p.add_argument('--batch-size', type=int, help="Batch size", default=500)
-    p.add_argument('--cuda', type=bool, help="Use GPU acceleration",
-                   default=True)
+                   default=1E-4)
+    p.add_argument('--batch-size', type=int, help="Batch size", default=100)
+    p.add_argument('--cuda', type=int, help="Use GPU acceleration",
+                   default=1)
     p.set_defaults(func=func)

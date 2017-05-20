@@ -25,8 +25,9 @@ class Lambda(nn.Module):
         self.epsilon_std = epsilon_std
 
     def forward(self, x, y):
-        eps = self.epsilon_std * Variable(torch.randn(*x.size()))
-        return x + torch.mul(torch.exp(y / 2.), eps)
+        eps = self.epsilon_std * Variable(torch.randn(*x.size()),
+                                          requires_grad=False).type_as(x)
+        return x + torch.exp(y / 2.) * eps
 
 
 class MolEncoder(nn.Module):
