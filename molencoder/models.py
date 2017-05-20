@@ -66,7 +66,7 @@ class MolEncoder(nn.Module):
         z_mean, z_log_var = self.z
 
         bce = nn.BCELoss()
-        xent_loss = max_length * bce(x, x_decoded_mean.detach())
+        xent_loss = max_length * bce(x_decoded_mean, x.detach())
         kl_loss = -0.5 * torch.mean(1. + z_log_var - z_mean ** 2. -
                                     torch.exp(z_log_var))
 

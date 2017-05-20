@@ -27,23 +27,35 @@ def func(args, parser):
     encoder = MolEncoder(c=len(charset))
     decoder = MolDecoder(c=len(charset))
 
-    if args.cuda > 0:
+    if args.cuda:
         dtype = torch.cuda.FloatTensor
         encoder.cuda()
         decoder.cuda()
 
-    optimizer = optim.Adam(chain(encoder.parameters(), decoder.parameters()))
-    best_loss = 1E6
+    if args.cont:
+        checkpoint = torch.load('checkpoint.pth.tar')
+        encoder.load_state_dict(checkpoint['encoder'])
+        decoder.load_state_dict(checkpoint['decoder'])
+        optimizer = optim.Adam(chain(encoder.parameters(),
+                                     decoder.parameters()))
+        decoder.load_state_dict(checkpoint['optimizer'])
+        best_loss = checkpoint['avg_val_loss']
+    else:
+        optimizer = optim.Adam(chain(encoder.parameters(),
+                                     decoder.parameters()))
+        best_loss = 1E6
+
     for epoch in range(args.num_epochs):
+        print('Epoch %s:' % epoch)
         adjust_learning_rate(optimizer, epoch, lr_init=args.learning_rate)
         train_model(train_loader, encoder, decoder, optimizer, dtype)
 
-        avg_val_loss = validate_model(train_loader, encoder, decoder, dtype)
+        avg_val_loss = validate_model(val_loader, encoder, decoder, dtype)
         is_best = avg_val_loss < best_loss
         save_checkpoint({
             'epoch': epoch,
-            'encoder_dict': encoder.state_dict(),
-            'decoder_dict': decoder.state_dict(),
+            'encoder': encoder.state_dict(),
+            'decoder': decoder.state_dict(),
             'avg_val_loss': avg_val_loss,
             'optimizer': optimizer.state_dict(),
         }, is_best)
@@ -60,6 +72,8 @@ def configure_parser(sub_parsers):
     p.add_argument('--learning-rate', type=float, help="Learning rate",
                    default=1E-4)
     p.add_argument('--batch-size', type=int, help="Batch size", default=100)
-    p.add_argument('--cuda', type=int, help="Use GPU acceleration",
-                   default=1)
+    p.add_argument('--cuda', type=bool, help="Use GPU acceleration",
+                   default=False)
+    p.add_argument('--cont', type=bool, help="Continue from saved state",
+                   default=False)
     p.set_defaults(func=func)

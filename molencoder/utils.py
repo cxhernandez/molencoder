@@ -72,7 +72,7 @@ def train_model(train_loader, encoder, decoder, optimizer, dtype,
         y_var = encoder(x_var)
         z_var = decoder(y_var)
 
-        loss = encoder.vae_loss(x_var, z_var.detach())
+        loss = encoder.vae_loss(x_var, z_var)
         if (t + 1) % print_every == 0:
             print('t = %d, loss = %.4f' % (t + 1, loss.data[0]))
 
@@ -94,7 +94,7 @@ def validate_model(val_loader, encoder, decoder, dtype):
 
         avg_val_loss += encoder.vae_loss(x_var, z_var.detach())
     avg_val_loss /= t
-    print('average validation loss: %.4f' % avg_val_loss[0])
+    print('average validation loss: %.4f' % avg_val_loss.data[0])
     return avg_val_loss
 
 
@@ -120,7 +120,7 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
 
 
 def adjust_learning_rate(optimizer, epoch, tau=30, lr_init=1E-4):
-    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
+    """Decays the LR by 10 every tau epochs"""
     lr = lr_init * (0.1 ** (epoch // tau))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
