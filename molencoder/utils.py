@@ -4,12 +4,14 @@ from torch.autograd import Variable
 
 
 class Flatten(nn.Module):
+
     def forward(self, x):
         size = x.size()  # read in N, C, H, W
         return x.view(size[0], -1)
 
 
 class Repeat(nn.Module):
+
     def __init__(self, rep):
         super(Repeat, self).__init__()
 
@@ -24,6 +26,7 @@ class Repeat(nn.Module):
 
 
 class TimeDistributed(nn.Module):
+
     def __init__(self, module, batch_first=False):
         super(TimeDistributed, self).__init__()
         self.module = module
@@ -60,7 +63,7 @@ def train_model(train_loader, encoder, decoder, optimizer, dtype,
                 print_every=100):
     encoder.train()
     decoder.train()
-    for t, x in enumerate(train_loader):
+    for t, (x, y) in enumerate(train_loader):
         x_var = Variable(x.type(dtype))
 
         y_var = encoder(x_var)

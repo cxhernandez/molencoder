@@ -18,6 +18,7 @@ def ConvBNReLU(i, o, kernel_size=3, padding=0, p=0.):
 
 
 class Lambda(nn.Module):
+
     def __init__(self, epsilon_std=1E-2):
         super(Lambda, self).__init__()
 
@@ -25,10 +26,11 @@ class Lambda(nn.Module):
 
     def forward(self, x, y):
         eps = self.epsilon_std * Variable(torch.randn(*x.size()))
-        return x + torch.exp(y / 2.) * eps
+        return x + torch.mul(torch.exp(y / 2.), eps)
 
 
 class MolEncoder(nn.Module):
+
     def __init__(self, i=120, o=292, c=35):
         super(MolEncoder, self).__init__()
 
@@ -71,6 +73,7 @@ class MolEncoder(nn.Module):
 
 
 class MolDecoder(nn.Module):
+
     def __init__(self, i=292, o=120, c=35):
         super(MolDecoder, self).__init__()
 
@@ -87,7 +90,7 @@ class MolDecoder(nn.Module):
     def forward(self, x):
         out = self.latent_input(x)
         out = self.repeat_vector(out)
-        out, h  = self.gru_1(out)
+        out, h = self.gru_1(out)
         out, h = self.gru_2(out)
         out, h = self.gru_3(out)
         return self.decoded_mean(out)

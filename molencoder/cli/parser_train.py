@@ -22,7 +22,6 @@ def func(args, parser):
     # test_loader = DataLoader(test, batch_size=args.batch_size, shuffle=True)
 
     dtype = torch.FloatTensor
-
     encoder = MolEncoder(c=len(charset))
     decoder = MolDecoder(c=len(charset))
 
