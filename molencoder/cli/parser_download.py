@@ -100,7 +100,7 @@ def func(args, parser):
                                                       list(dataset_shape[1:]))
                                          )
         for (chunk_ixs, chunk) in chunk_iterator(dataset):
-            new_data[chunk_ixs, ...] = featurizer.featurize(chunk)
+            new_data[chunk_ixs, ...] = featurizer.featurize([smiles[i] for i in chunk])
 
     print('Saving Dataset...')
     create_chunk_dataset(h5f, 'data_train', train_idx,
