@@ -29,6 +29,8 @@ class MolEncoder(nn.Module):
     def __init__(self, i=120, o=292, c=35):
         super(MolEncoder, self).__init__()
 
+        self.i = i
+
         self.conv_1 = ConvBNReLU(i, 9, kernel_size=9)
         self.conv_2 = ConvBNReLU(9, 9, kernel_size=9)
         self.conv_3 = ConvBNReLU(9, 10, kernel_size=11)
@@ -57,7 +59,7 @@ class MolEncoder(nn.Module):
     def vae_loss(self, x, x_decoded_mean):
         z_mean, z_log_var = self.z
 
-        bce = nn.BCELoss(size_average=True)
+        bce = self.i * nn.BCELoss(size_average=True)
         xent_loss = bce(x_decoded_mean, x)
         kl_loss = -0.5 * torch.mean(1. + z_log_var - z_mean ** 2. -
                                     torch.exp(z_log_var))
