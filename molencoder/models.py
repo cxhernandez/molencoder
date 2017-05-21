@@ -59,8 +59,8 @@ class MolEncoder(nn.Module):
     def vae_loss(self, x, x_decoded_mean):
         z_mean, z_log_var = self.z
 
-        bce = float(self.i) * nn.BCELoss(size_average=True)
-        xent_loss = bce(x_decoded_mean, x)
+        bce = nn.BCELoss(size_average=True)
+        xent_loss = self.i * bce(x_decoded_mean, x)
         kl_loss = -0.5 * torch.mean(1. + z_log_var - z_mean ** 2. -
                                     torch.exp(z_log_var))
 
