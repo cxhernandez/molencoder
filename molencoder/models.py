@@ -7,7 +7,7 @@ from .utils import Flatten, Repeat, TimeDistributed
 __all__ = ['MolEncoder', 'MolDecoder']
 
 
-def ConvBNReLU(i, o, kernel_size=3, padding=0, p=0.):
+def ConvBNReLU(i, o, kernel_size=3, padding=0, p=0.3):
     model = [nn.Conv1d(i, o, kernel_size=kernel_size, padding=padding),
              nn.BatchNorm1d(o),
              nn.LeakyReLU(inplace=True)
@@ -34,6 +34,7 @@ class MolEncoder(nn.Module):
         self.conv_3 = ConvBNReLU(9, 10, kernel_size=11)
         self.dense_1 = nn.Sequential(nn.Linear((c - 29 + 3) * 10, 435),
                                      nn.BatchNorm1d(435),
+                                     nn.Dropout2d(0.3),
                                      nn.LeakyReLU(inplace=True))
 
         self.z_mean = nn.Linear(435, o)
@@ -71,6 +72,7 @@ class MolDecoder(nn.Module):
 
         self.latent_input = nn.Sequential(nn.Linear(i, i),
                                           nn.BatchNorm1d(i),
+                                          nn.Dropout2d(0.3),
                                           nn.LeakyReLU(inplace=True))
         self.repeat_vector = Repeat(o)
         self.gru_1 = nn.GRU(i, 501)
