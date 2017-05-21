@@ -1,9 +1,82 @@
 import h5py
 import shutil
+import warnings
 
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from torch.optim.optimizer import Optimizer
+
+
+class ReduceLROnPlateau(object):
+
+    def __init__(self, optimizer, mode='min', factor=0.1, patience=5,
+                 verbose=0, epsilon=1E-4, cooldown=0, min_lr=0):
+
+        if factor >= 1.0:
+            raise ValueError('ReduceLROnPlateau '
+                             'does not support a factor >= 1.0.')
+        self.factor = factor
+        self.min_lr = min_lr
+        self.epsilon = epsilon
+        self.patience = patience
+        self.verbose = verbose
+        self.cooldown = cooldown
+        self.cooldown_counter = 0  # Cooldown counter.
+        self.monitor_op = None
+        self.wait = 0
+        self.best = 0
+        self.mode = mode
+        assert isinstance(optimizer, Optimizer)
+        self.optimizer = optimizer
+        self.reset()
+
+    def reset(self):
+        """Resets wait counter and cooldown counter.
+        """
+        if self.mode not in ['min', 'max']:
+            raise RuntimeError(
+                'Learning Rate Plateau Reducing mode %s is unknown!')
+        if self.mode == 'min':
+            self.monitor_op = lambda a, b: a < (b - self.epsilon)
+            self.best = 1E12
+        else:
+            self.monitor_op = lambda a, b: a > (b + self.epsilon)
+            self.best = -1E12
+        self.cooldown_counter = 0
+        self.wait = 0
+        self.lr_epsilon = self.min_lr * 1E-4
+
+    def step(self, metrics, epoch):
+        current = metrics
+        if current is None:
+            warnings.warn('Learning Rate Plateau Reducing requires '
+                          'metrics available!', RuntimeWarning)
+        else:
+            if self.in_cooldown():
+                self.cooldown_counter -= 1
+                self.wait = 0
+
+            if self.monitor_op(current, self.best):
+                self.best = current
+                self.wait = 0
+            elif not self.in_cooldown():
+                if self.wait >= self.patience:
+                    for param_group in self.optimizer.param_groups:
+                        old_lr = float(param_group['lr'])
+                        if old_lr > self.min_lr + self.lr_epsilon:
+                            new_lr = old_lr * self.factor
+                            new_lr = max(new_lr, self.min_lr)
+                            param_group['lr'] = new_lr
+                            if self.verbose > 0:
+                                print('Epoch %s: reducing learning rate to %s.' % (
+                                    epoch, new_lr))
+                            self.cooldown_counter = self.cooldown
+                            self.wait = 0
+                self.wait += 1
+
+    def in_cooldown(self):
+        return self.cooldown_counter > 0
 
 
 class Flatten(nn.Module):
@@ -118,10 +191,3 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'model_best.pth.tar')
-
-
-def adjust_learning_rate(optimizer, epoch, tau=30, lr_init=1E-4):
-    """Decays the LR by 10 every tau epochs"""
-    lr = lr_init * (0.1 ** (epoch // tau))
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr

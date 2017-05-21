@@ -10,7 +10,7 @@ def func(args, parser):
     from torch.utils.data import TensorDataset, DataLoader
 
     from ..models import MolEncoder, MolDecoder
-    from ..utils import (load_dataset, train_model, adjust_learning_rate,
+    from ..utils import (load_dataset, train_model, ReduceLROnPlateau,
                          save_checkpoint, validate_model)
 
     data_train, data_val, charset = load_dataset(args.dataset)
@@ -47,12 +47,15 @@ def func(args, parser):
                                      decoder.parameters()))
         best_loss = 1E6
 
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', min_lr=1E-5)
     for epoch in range(args.num_epochs):
         print('Epoch %s:' % epoch)
-        adjust_learning_rate(optimizer, epoch, lr_init=args.learning_rate)
-        train_model(train_loader, encoder, decoder, optimizer, dtype)
 
+        train_model(train_loader, encoder, decoder, optimizer, dtype)
         avg_val_loss = validate_model(val_loader, encoder, decoder, dtype)
+
+        scheduler.step(avg_val_loss, epoch)
+
         is_best = avg_val_loss < best_loss
         save_checkpoint({
             'epoch': epoch,
@@ -71,8 +74,6 @@ def configure_parser(sub_parsers):
                    required=True)
     p.add_argument('--num-epochs', type=int, help="Number of epochs",
                    default=1)
-    p.add_argument('--learning-rate', type=float, help="Learning rate",
-                   default=1E-4)
     p.add_argument('--batch-size', type=int, help="Batch size", default=100)
     p.add_argument('--cuda', help="Use GPU acceleration",
                    action='store_true')
