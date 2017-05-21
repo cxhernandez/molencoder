@@ -17,7 +17,7 @@ $ molencoder download --dataset chembl22
 ## Train
 
 ```bash
-molencoder train --dataset data/chembl22.h5
+$ molencoder train --dataset data/chembl22.h5
 ```
 
 Add `--cuda` flag to enable CUDA. Add `--cont` to continue training a model from a checkpoint file.
