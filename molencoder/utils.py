@@ -86,16 +86,16 @@ def validate_model(val_loader, encoder, decoder, dtype):
     decoder.eval()
 
     avg_val_loss = 0.
-    for t, (x, y) in enumerate(val_loader):
+    for t, (x, y) in val_loader:
         x_var = Variable(x.type(dtype))
 
         y_var = encoder(x_var)
         z_var = decoder(y_var)
 
-        avg_val_loss += encoder.vae_loss(x_var, z_var)
+        avg_val_loss += encoder.vae_loss(x_var, z_var).data
     avg_val_loss /= t
-    print('average validation loss: %.4f' % avg_val_loss.data[0])
-    return avg_val_loss
+    print('average validation loss: %.4f' % avg_val_loss[0])
+    return avg_val_loss[0]
 
 
 def load_dataset(filename, split=True):
