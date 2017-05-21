@@ -28,7 +28,8 @@ Add `--cuda` flag to enable CUDA. Add `--cont` to continue training a model from
 - [x] Implement decoder
 - [x] Add download command
 - [x] Add train command
-- [ ] Add test command
+- [ ] Add encode command
+- [ ] Add decode command
 - [ ] Add pre-trained models
 
 
