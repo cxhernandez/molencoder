@@ -41,9 +41,9 @@ def args_func(args, p):
     except Exception as e:
         if e.__class__.__name__ not in ('ScannerError', 'ParserError'):
             message = """\
-An unexpected error has occurred with osprey (version %s), please
+An unexpected error has occurred with %s (version %s), please
 consider sending the following traceback to the osprey GitHub issue tracker at:
         https://github.com/cxhernandez/%s/issues
 """
-            print(message % (VERSION, NAME), file=sys.stderr)
+            print(message % (NAME, VERSION, NAME), file=sys.stderr)
         raise  # as if we did not catch it
