@@ -95,7 +95,7 @@ def func(args, parser):
 
     def chunk_iterator(dataset, chunk_size=1000):
         chunk_indices = np.array_split(np.arange(len(dataset)),
-                                        len(dataset)/chunk_size)
+                                       len(dataset) / chunk_size)
         for chunk_ixs in chunk_indices:
             chunk = dataset[chunk_ixs]
             yield (chunk_ixs, chunk)
@@ -108,7 +108,8 @@ def func(args, parser):
                                                       list(dataset_shape[1:]))
                                          )
         for (chunk_ixs, chunk) in chunk_iterator(dataset, chunk_size=chunk_size):
-            new_data[chunk_ixs, ...] = featurizer.featurize([smiles[i] for i in chunk])
+            new_data[chunk_ixs, ...] = featurizer.featurize(
+                [smiles[i] for i in chunk])
 
     print('Saving Dataset...')
     create_chunk_dataset(h5f, 'data_train', train_idx,

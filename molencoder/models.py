@@ -18,17 +18,14 @@ def ConvBNReLU(i, o, kernel_size=3, padding=0, p=0.):
 
 
 class Lambda(nn.Module):
-    def __init__(self, epsilon_std=1E-2):
-        super(Lambda, self).__init__()
-
-        self.epsilon_std = epsilon_std
 
     def forward(self, x, y):
-        eps = self.epsilon_std * Variable(torch.randn(*x.size()))
+        eps = Variable(torch.randn(*x.size())).type_as(x)
         return x + torch.exp(y / 2.) * eps
 
 
 class MolEncoder(nn.Module):
+
     def __init__(self, i=120, o=292, c=35):
         super(MolEncoder, self).__init__()
 
@@ -56,21 +53,19 @@ class MolEncoder(nn.Module):
 
         return self.lmbd(*self.z)
 
-    def vae_loss(self, x, x_decoded_mean, max_length=120):
-        x = Flatten()(x)
-        x_decoded_mean = Flatten()(x_decoded_mean)
-
+    def vae_loss(self, x, x_decoded_mean):
         z_mean, z_log_var = self.z
 
-        bce = nn.BCELoss()
-        xent_loss = max_length * bce(x, x_decoded_mean.detach())
-        kl_loss = -0.5 * torch.mean(1. + z_log_var - z_mean ** 2. -
-                                    torch.exp(z_log_var))
+        bce = nn.BCELoss(size_average=False)
+        xent_loss = bce(x_decoded_mean, x)
+        kl_loss = -0.5 * torch.sum(1. + z_log_var - z_mean ** 2. -
+                                   torch.exp(z_log_var))
 
         return kl_loss + xent_loss
 
 
 class MolDecoder(nn.Module):
+
     def __init__(self, i=292, o=120, c=35):
         super(MolDecoder, self).__init__()
 
@@ -87,7 +82,7 @@ class MolDecoder(nn.Module):
     def forward(self, x):
         out = self.latent_input(x)
         out = self.repeat_vector(out)
-        out, h  = self.gru_1(out)
+        out, h = self.gru_1(out)
         out, h = self.gru_2(out)
         out, h = self.gru_3(out)
         return self.decoded_mean(out)

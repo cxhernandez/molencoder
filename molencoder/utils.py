@@ -1,14 +1,20 @@
 import h5py
+import shutil
+
+import torch
 import torch.nn as nn
+from torch.autograd import Variable
 
 
 class Flatten(nn.Module):
+
     def forward(self, x):
         size = x.size()  # read in N, C, H, W
         return x.view(size[0], -1)
 
 
 class Repeat(nn.Module):
+
     def __init__(self, rep):
         super(Repeat, self).__init__()
 
@@ -23,6 +29,7 @@ class Repeat(nn.Module):
 
 
 class TimeDistributed(nn.Module):
+
     def __init__(self, module, batch_first=False):
         super(TimeDistributed, self).__init__()
         self.module = module
@@ -55,21 +62,40 @@ def reset(m):
         m.reset_parameters()
 
 
-def train(loader_train, encoder, decoder, optimizer, dtype):
-    model.train()
-    for t, x in enumerate(loader_train):
+def train_model(train_loader, encoder, decoder, optimizer, dtype,
+                print_every=100):
+    encoder.train()
+    decoder.train()
+    for t, (x, y) in enumerate(train_loader):
         x_var = Variable(x.type(dtype))
 
         y_var = encoder(x_var)
         z_var = decoder(y_var)
 
-        loss = encoder.vae_loss(x_var, z_var.detach())
+        loss = encoder.vae_loss(x_var, z_var)
         if (t + 1) % print_every == 0:
             print('t = %d, loss = %.4f' % (t + 1, loss.data[0]))
 
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+
+def validate_model(val_loader, encoder, decoder, dtype):
+    encoder.eval()
+    decoder.eval()
+
+    avg_val_loss = 0.
+    for t, (x, y) in val_loader:
+        x_var = Variable(x.type(dtype))
+
+        y_var = encoder(x_var)
+        z_var = decoder(y_var)
+
+        avg_val_loss += encoder.vae_loss(x_var, z_var).data
+    avg_val_loss /= t
+    print('average validation loss: %.4f' % avg_val_loss[0])
+    return avg_val_loss[0]
 
 
 def load_dataset(filename, split=True):
@@ -85,3 +111,16 @@ def load_dataset(filename, split=True):
         return (data_train, data_test, charset)
     else:
         return (data_test, charset)
+
+
+def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+    torch.save(state, filename)
+    if is_best:
+        shutil.copyfile(filename, 'model_best.pth.tar')
+
+
+def adjust_learning_rate(optimizer, epoch, tau=30, lr_init=1E-4):
+    """Decays the LR by 10 every tau epochs"""
+    lr = lr_init * (0.1 ** (epoch // tau))
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
