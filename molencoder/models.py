@@ -36,8 +36,7 @@ class MolEncoder(nn.Module):
         self.conv_3 = ConvBNReLU(9, 10, kernel_size=11)
         self.dense_1 = nn.Sequential(nn.Linear((c - 29 + 3) * 10, 435),
                                      nn.BatchNorm1d(435),
-                                     nn.LeakyReLU(inplace=True),
-                                     nn.Dropout(0.3))
+                                     nn.LeakyReLU(inplace=True))
 
         self.z_mean = nn.Linear(435, o)
         self.z_log_var = nn.Linear(435, o)
@@ -74,8 +73,7 @@ class MolDecoder(nn.Module):
 
         self.latent_input = nn.Sequential(nn.Linear(i, i),
                                           nn.BatchNorm1d(i),
-                                          nn.LeakyReLU(inplace=True),
-                                          nn.Dropout(0.3))
+                                          nn.LeakyReLU(inplace=True))
         self.repeat_vector = Repeat(o)
         self.gru_1 = nn.GRU(i, 501)
         self.gru_2 = nn.GRU(501, 501)
