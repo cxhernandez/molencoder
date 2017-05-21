@@ -66,6 +66,7 @@ def train_model(train_loader, encoder, decoder, optimizer, dtype,
                 print_every=100):
     encoder.train()
     decoder.train()
+
     for t, (x, y) in enumerate(train_loader):
         x_var = Variable(x.type(dtype))
 
@@ -86,7 +87,7 @@ def validate_model(val_loader, encoder, decoder, dtype):
     decoder.eval()
 
     avg_val_loss = 0.
-    for t, (x, y) in val_loader:
+    for t, (x, y) in enumerate(val_loader):
         x_var = Variable(x.type(dtype))
 
         y_var = encoder(x_var)

@@ -7,13 +7,13 @@ from .utils import Flatten, Repeat, TimeDistributed
 __all__ = ['MolEncoder', 'MolDecoder']
 
 
-def ConvBNReLU(i, o, kernel_size=3, padding=0, p=0.):
+def ConvBNReLU(i, o, kernel_size=3, padding=0, p=0.3):
     model = [nn.Conv1d(i, o, kernel_size=kernel_size, padding=padding),
              nn.BatchNorm1d(o),
              nn.LeakyReLU(inplace=True)
              ]
     if p > 0.:
-        model += [nn.Dropout2d(p)]
+        model += [nn.Dropout(p)]
     return nn.Sequential(*model)
 
 
@@ -28,6 +28,8 @@ class MolEncoder(nn.Module):
 
     def __init__(self, i=120, o=292, c=35):
         super(MolEncoder, self).__init__()
+
+        self.i = i
 
         self.conv_1 = ConvBNReLU(i, 9, kernel_size=9)
         self.conv_2 = ConvBNReLU(9, 9, kernel_size=9)
@@ -57,7 +59,7 @@ class MolEncoder(nn.Module):
         z_mean, z_log_var = self.z
 
         bce = nn.BCELoss(size_average=True)
-        xent_loss = bce(x_decoded_mean, x)
+        xent_loss = self.i * bce(x_decoded_mean, x)
         kl_loss = -0.5 * torch.mean(1. + z_log_var - z_mean ** 2. -
                                     torch.exp(z_log_var))
 
