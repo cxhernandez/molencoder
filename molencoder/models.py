@@ -19,14 +19,8 @@ def ConvBNReLU(i, o, kernel_size=3, padding=0, p=0.):
 
 class Lambda(nn.Module):
 
-    def __init__(self, epsilon_std=1E-2):
-        super(Lambda, self).__init__()
-
-        self.epsilon_std = epsilon_std
-
     def forward(self, x, y):
-        eps = self.epsilon_std * Variable(torch.randn(*x.size()),
-                                          requires_grad=False).type_as(x)
+        eps = Variable(torch.randn(*x.size())).type_as(x)
         return x + torch.exp(y / 2.) * eps
 
 
@@ -59,16 +53,13 @@ class MolEncoder(nn.Module):
 
         return self.lmbd(*self.z)
 
-    def vae_loss(self, x, x_decoded_mean, max_length=120):
-        x = Flatten()(x)
-        x_decoded_mean = Flatten()(x_decoded_mean)
-
+    def vae_loss(self, x, x_decoded_mean):
         z_mean, z_log_var = self.z
 
-        bce = nn.BCELoss()
-        xent_loss = max_length * bce(x_decoded_mean, x.detach())
-        kl_loss = -0.5 * torch.mean(1. + z_log_var - z_mean ** 2. -
-                                    torch.exp(z_log_var))
+        bce = nn.BCELoss(size_average=False)
+        xent_loss = bce(x_decoded_mean, x)
+        kl_loss = -0.5 * torch.sum(1. + z_log_var - z_mean ** 2. -
+                                   torch.exp(z_log_var))
 
         return kl_loss + xent_loss
 

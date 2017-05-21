@@ -15,8 +15,8 @@ def func(args, parser):
 
     data_train, data_val, charset = load_dataset(args.dataset)
 
-    data_train = torch.FloatTensor(data_train)
-    data_val = torch.FloatTensor(data_val)
+    data_train = torch.from_numpy(data_train)
+    data_val = torch.from_numpy(data_val)
 
     train = TensorDataset(data_train, torch.zeros(data_train.size()[0]))
     train_loader = DataLoader(train, batch_size=args.batch_size, shuffle=True)
