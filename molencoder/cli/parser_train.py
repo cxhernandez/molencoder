@@ -74,7 +74,7 @@ def configure_parser(sub_parsers):
                    required=True)
     p.add_argument('--num-epochs', type=int, help="Number of epochs",
                    default=1)
-    p.add_argument('--batch-size', type=int, help="Batch size", default=100)
+    p.add_argument('--batch-size', type=int, help="Batch size", default=250)
     p.add_argument('--cuda', help="Use GPU acceleration",
                    action='store_true')
     p.add_argument('--cont', help="Continue from saved state",
