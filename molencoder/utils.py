@@ -10,7 +10,7 @@ from torch.optim.optimizer import Optimizer
 class ReduceLROnPlateau(object):
 
     def __init__(self, optimizer, mode='min', factor=0.5, patience=5,
-                 verbose=True, epsilon=1E-4, min_lr=0.):
+                 verbose=True, epsilon=1E-3, min_lr=0.):
 
         if factor <= 0.0:
             raise ValueError('ReduceLROnPlateau '
