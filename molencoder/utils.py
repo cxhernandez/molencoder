@@ -73,10 +73,11 @@ class Repeat(nn.Module):
         self.rep = rep
 
     def forward(self, x):
-        size = (1,) + tuple(x.size())
+        size = tuple(x.size())
+        size = (size[0], 1) + size[1:]
         x_expanded = x.view(*size)
         n = [1 for _ in size]
-        n[0] = self.rep
+        n[1] = self.rep
         return x_expanded.repeat(*n)
 
 
