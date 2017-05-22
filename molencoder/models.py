@@ -18,8 +18,13 @@ def ConvReLU(i, o, kernel_size=3, padding=0, p=0.):
 
 class Lambda(nn.Module):
 
+    def __init__(self, scale=1E-2):
+        super(Lambda, self).__init__()
+
+        self.scale = scale
+
     def forward(self, x, y):
-        eps = Variable(torch.randn(*x.size())).type_as(x)
+        eps = self.scale * Variable(torch.randn(*x.size())).type_as(x)
         return x + torch.exp(y / 2.) * eps
 
 
