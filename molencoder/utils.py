@@ -82,7 +82,7 @@ class Repeat(nn.Module):
 
 class TimeDistributed(nn.Module):
 
-    def __init__(self, module, batch_first=False):
+    def __init__(self, module, batch_first=True):
         super(TimeDistributed, self).__init__()
         self.module = module
         self.batch_first = batch_first
@@ -101,7 +101,7 @@ class TimeDistributed(nn.Module):
         # We have to reshape Y
         if self.batch_first:
             # (samples, timesteps, output_size)
-            y = y.contiguous().view(x.size(1), -1, y.size(-1))
+            y = y.contiguous().view(x.size(0), -1, y.size(-1))
         else:
             # (timesteps, samples, output_size)
             y = y.view(-1, x.size(1), y.size(-1))
