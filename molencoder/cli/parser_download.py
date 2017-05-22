@@ -17,7 +17,6 @@ MAX_NUM_ROWS = 500000
 def func(args, parser):
     import os
     import sys
-    import argparse
     import urllib.request
     import tempfile
 
