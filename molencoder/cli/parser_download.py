@@ -17,7 +17,6 @@ MAX_NUM_ROWS = 500000
 def func(args, parser):
     import os
     import sys
-    import argparse
     import urllib.request
     import tempfile
 
@@ -62,7 +61,7 @@ def func(args, parser):
     print('Downloading Dataset...')
     urllib.request.urlretrieve(uri, fd.name, reporthook=update)
 
-    print('Loading Dataset...')
+    print('\nLoading Dataset...')
     if dataset == 'zinc12':
         df = pandas.read_csv(fd.name, delimiter='\t')
         df = df.rename(columns={'SMILES': 'structure'})
