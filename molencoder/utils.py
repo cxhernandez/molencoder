@@ -52,8 +52,7 @@ class ReduceLROnPlateau(object):
                     new_lr = old_lr * self.factor
                     param_group['lr'] = max(new_lr, self.min_lr)
                     if self.verbose:
-                        print('Reducing learning rate to %s.' %
-                              (epoch, new_lr))
+                        print('Reducing learning rate to %s.' % new_lr)
                     self.wait = 0
         else:
             self.wait += 1
