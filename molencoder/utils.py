@@ -45,7 +45,7 @@ class ReduceLROnPlateau(object):
             self.best = metric
             self.wait = 0
 
-        if self.wait >= self.patience:
+        elif self.wait >= self.patience:
             for param_group in self.optimizer.param_groups:
                 old_lr = float(param_group['lr'])
                 if old_lr > (self.min_lr + self.lr_epsilon):
@@ -55,6 +55,7 @@ class ReduceLROnPlateau(object):
                         print('Reducing learning rate to %s.' %
                               (epoch, new_lr))
                     self.wait = 0
+        else:
             self.wait += 1
 
 
