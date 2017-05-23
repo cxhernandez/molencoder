@@ -38,14 +38,22 @@ def func(args, parser):
         checkpoint = torch.load('checkpoint.pth.tar')
         encoder.load_state_dict(checkpoint['encoder'])
         decoder.load_state_dict(checkpoint['decoder'])
-        optimizer = optim.Adam(chain(encoder.parameters(),
-                                     decoder.parameters()))
+        optimizer = optim.SGD(chain(encoder.parameters(),
+                                    decoder.parameters()),
+                              lr=args.learning_rate
+                              )
         optimizer.load_state_dict(checkpoint['optimizer'])
         best_loss = checkpoint['avg_val_loss']
     else:
-        optimizer = optim.Adam(chain(encoder.parameters(),
-                                     decoder.parameters()))
+        optimizer = optim.SGD(chain(encoder.parameters(),
+                                    decoder.parameters()),
+                              lr=args.learning_rate
+                              )
         best_loss = 1E6
+
+    for param_groups in optimizer.param_groups:
+        param_groups['momentum'] = args.momentum
+        param_groups['weight_decay'] = args.weight_decay
 
     scheduler = ReduceLROnPlateau(optimizer, mode='min', min_lr=1E-5)
     for epoch in range(args.num_epochs):
@@ -75,6 +83,12 @@ def configure_parser(sub_parsers):
     p.add_argument('--num-epochs', type=int, help="Number of epochs",
                    default=1)
     p.add_argument('--batch-size', type=int, help="Batch size", default=250)
+    p.add_argument('--learning-rate', type=float, help="Initial learning rate",
+                   default=1E-3)
+    p.add_argument('--weight-decay', type=float,
+                   help="Regularization strength", default=0.)
+    p.add_argument('--momentum', type=float, help="Nesterov momentum"",
+                   default=0.9)
     p.add_argument('--cuda', help="Use GPU acceleration",
                    action='store_true')
     p.add_argument('--cont', help="Continue from saved state",
