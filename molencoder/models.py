@@ -7,9 +7,10 @@ from .utils import Flatten, Repeat, TimeDistributed
 __all__ = ['MolEncoder', 'MolDecoder']
 
 
-def ConvReLU(i, o, kernel_size=3, padding=0, p=0.):
+def ConvBNReLU(i, o, kernel_size=3, padding=0, p=0.3):
     model = [nn.Conv1d(i, o, kernel_size=kernel_size, padding=padding),
-             nn.ReLU(inplace=True)
+             nn.BatchNorm1d(o),
+             nn.LeakyReLU(inplace=True)
              ]
     if p > 0.:
         model += [nn.Dropout(p)]
@@ -40,11 +41,12 @@ class MolEncoder(nn.Module):
 
         self.i = i
 
-        self.conv_1 = ConvReLU(i, 9, kernel_size=9)
-        self.conv_2 = ConvReLU(9, 9, kernel_size=9)
-        self.conv_3 = ConvReLU(9, 10, kernel_size=11)
+        self.conv_1 = ConvBNReLU(i, 9, kernel_size=9)
+        self.conv_2 = ConvBNReLU(9, 9, kernel_size=9)
+        self.conv_3 = ConvBNReLU(9, 10, kernel_size=11)
         self.dense_1 = nn.Sequential(nn.Linear((c - 29 + 3) * 10, 435),
-                                     nn.ReLU(inplace=True))
+                                     nn.BatchNorm1d(435),
+                                     nn.LeakyReLU(inplace=True))
 
         self.lmbd = Lambda(435, o)
 
@@ -74,7 +76,8 @@ class MolDecoder(nn.Module):
         super(MolDecoder, self).__init__()
 
         self.latent_input = nn.Sequential(nn.Linear(i, i),
-                                          nn.ReLU(inplace=True))
+                                          nn.BatchNorm1d(i),
+                                          nn.LeakyReLU(inplace=True))
         self.repeat_vector = Repeat(o)
         self.gru = nn.GRU(i, 501, 3, batch_first=True)
         self.decoded_mean = TimeDistributed(nn.Sequential(nn.Linear(501, c),
