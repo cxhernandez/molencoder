@@ -87,7 +87,7 @@ def configure_parser(sub_parsers):
                    default=1E-3)
     p.add_argument('--weight-decay', type=float,
                    help="Regularization strength", default=0.)
-    p.add_argument('--momentum', type=float, help="Nesterov momentum"",
+    p.add_argument('--momentum', type=float, help="Nesterov momentum",
                    default=0.9)
     p.add_argument('--cuda', help="Use GPU acceleration",
                    action='store_true')
