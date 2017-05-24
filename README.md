@@ -38,4 +38,4 @@ Add `--cuda` flag to enable CUDA. Add `--cont` to continue training a model from
 + [Original paper](https://arxiv.org/abs/1610.02415) by Gómez-Bombarelli, et al.
 + [keras-molecules](https://github.com/maxhodak/keras-molecules) by Max Hodak
 + [DeepChem](https://github.com/deepchem/deepchem)
-+ [PyTorch](pytorch.org)
++ [PyTorch](https://pytorch.org)
