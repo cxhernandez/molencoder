@@ -38,22 +38,21 @@ def func(args, parser):
         checkpoint = torch.load('checkpoint.pth.tar')
         encoder.load_state_dict(checkpoint['encoder'])
         decoder.load_state_dict(checkpoint['decoder'])
-        optimizer = optim.SGD(chain(encoder.parameters(),
-                                    decoder.parameters()),
-                              lr=args.learning_rate
-                              )
+        optimizer = optim.Adam(chain(encoder.parameters(),
+                                     decoder.parameters()),
+                               )
         optimizer.load_state_dict(checkpoint['optimizer'])
         best_loss = checkpoint['avg_val_loss']
     else:
-        optimizer = optim.SGD(chain(encoder.parameters(),
-                                    decoder.parameters()),
-                              lr=args.learning_rate
-                              )
+        optimizer = optim.Adam(chain(encoder.parameters(),
+                                     decoder.parameters()),
+                               )
         best_loss = 1E6
 
     for param_groups in optimizer.param_groups:
         param_groups['momentum'] = args.momentum
         param_groups['weight_decay'] = args.weight_decay
+        param_groups['lr'] = args.learning_rate
 
     scheduler = ReduceLROnPlateau(optimizer, mode='min', min_lr=1E-5)
     for epoch in range(args.num_epochs):
