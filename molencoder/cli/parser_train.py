@@ -50,7 +50,7 @@ def func(args, parser):
         best_loss = 1E6
 
     for param_groups in optimizer.param_groups:
-        param_groups['momentum'] = args.momentum
+        param_groups['betas'] = [args.beta1, args.beta2]
         param_groups['weight_decay'] = args.weight_decay
         param_groups['lr'] = args.learning_rate
 
@@ -86,8 +86,10 @@ def configure_parser(sub_parsers):
                    default=1E-3)
     p.add_argument('--weight-decay', type=float,
                    help="Regularization strength", default=0.)
-    p.add_argument('--momentum', type=float, help="Nesterov momentum",
+    p.add_argument('--beta1', type=float, help="Beta1",
                    default=0.9)
+    p.add_argument('--beta2', type=float, help="Beta2",
+                   default=0.999)
     p.add_argument('--cuda', help="Use GPU acceleration",
                    action='store_true')
     p.add_argument('--cont', help="Continue from saved state",
