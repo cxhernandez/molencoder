@@ -79,7 +79,12 @@ class MolDecoder(nn.Module):
                                           nn.BatchNorm1d(i),
                                           nn.LeakyReLU(inplace=True))
         self.repeat_vector = Repeat(o)
-        self.gru = nn.GRU(i, 501, 3, batch_first=True)
+        self.gru_1 = nn.Sequential(nn.GRU(i, 501, batch_first=True),
+                                   nn.BatchNorm1d(501))
+        self.gru_2 = nn.Sequential(nn.GRU(501, 501, batch_first=True),
+                                   nn.BatchNorm1d(501))
+        self.gru_3 = nn.Sequential(nn.GRU(501, 501, batch_first=True),
+                                   nn.BatchNorm1d(501))
         self.decoded_mean = TimeDistributed(nn.Sequential(nn.Linear(501, c),
                                                           nn.Softmax())
                                             )
@@ -87,5 +92,7 @@ class MolDecoder(nn.Module):
     def forward(self, x):
         out = self.latent_input(x)
         out = self.repeat_vector(out)
-        out, h = self.gru(out)
+        out, h = self.gru_1(out)
+        out, h = self.gru_2(out)
+        out, h = self.gru_3(out)
         return self.decoded_mean(out)
