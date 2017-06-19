@@ -10,8 +10,8 @@ def func(args, parser):
     from torch.utils.data import TensorDataset, DataLoader
 
     from ..models import MolEncoder, MolDecoder
-    from ..utils import (load_dataset, train_model, ReduceLROnPlateau,
-                         save_checkpoint, validate_model)
+    from ..utils import (load_dataset, initialize_weights, train_model,
+                         ReduceLROnPlateau, save_checkpoint, validate_model)
 
     data_train, data_val, charset = load_dataset(args.dataset)
 
@@ -26,7 +26,9 @@ def func(args, parser):
 
     dtype = torch.FloatTensor
     encoder = MolEncoder(c=len(charset))
+    encoder.apply(initialize_weights)
     decoder = MolDecoder(c=len(charset))
+    decoder.apply(initialize_weights)
 
     if args.cuda:
         dtype = torch.cuda.FloatTensor
