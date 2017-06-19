@@ -22,6 +22,11 @@ $ molencoder train --dataset data/chembl22.h5
 
 Add `--cuda` flag to enable CUDA. Add `--cont` to continue training a model from a checkpoint file.
 
+
+## Pre-Trained Model
+
+A pre-trained reference model is available in the `ref/` directory. Currently, it performs with ~98% accuracy on the validation set after 100 epochs of training. However, if you succeed at training a better model, feel free to submit a pull request!
+
 ## TODO
 
 - [x] Implement encoder
