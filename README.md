@@ -35,7 +35,7 @@ A pre-trained reference model is available in the `ref/` directory. Currently, i
 - [x] Add train command
 - [ ] Add encode command
 - [ ] Add decode command
-- [ ] Add pre-trained models
+- [x] Add pre-trained model
 
 
 ## Shoutouts
