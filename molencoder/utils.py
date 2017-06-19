@@ -146,7 +146,7 @@ def validate_model(val_loader, encoder, decoder, dtype):
         y_var = encoder(x_var)
         z_var = decoder(y_var)
 
-        avg_val_loss += encoder.vae_loss(x_var, z_var).data
+        avg_val_loss += encoder.vae_loss(z_var, x_var).data
     avg_val_loss /= t
     print('average validation loss: %.4f' % avg_val_loss[0])
     return avg_val_loss[0]

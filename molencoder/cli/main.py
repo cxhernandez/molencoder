@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import, division
 import sys
 import argparse
 
-from . import parser_download, parser_train, parser_test
+from . import parser_download, parser_train
 
 NAME = 'molencoder'
 VERSION = '0.1a'
@@ -24,7 +24,6 @@ def main():
 
     parser_download.configure_parser(sub_parsers)
     parser_train.configure_parser(sub_parsers)
-    parser_test.configure_parser(sub_parsers)
 
     if len(sys.argv) == 1:
         sys.argv.append('-h')

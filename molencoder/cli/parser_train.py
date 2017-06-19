@@ -57,10 +57,13 @@ def func(args, parser):
         scheduler.step(avg_val_loss, epoch)
 
         is_best = avg_val_loss < best_loss
+        if is_best:
+            best_loss = avg_val_loss
         save_checkpoint({
             'epoch': epoch,
             'encoder': encoder.state_dict(),
             'decoder': decoder.state_dict(),
+            'charset': charset,
             'avg_val_loss': avg_val_loss,
             'optimizer': optimizer.state_dict(),
         }, is_best)

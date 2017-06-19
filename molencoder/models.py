@@ -7,9 +7,22 @@ from .utils import Flatten, Repeat, TimeDistributed
 __all__ = ['MolEncoder', 'MolDecoder']
 
 
-def ConvReLU(i, o, kernel_size=3, padding=0, p=0.):
+class SELU(nn.Module):
+
+    def __init__(self, alpha=1.6732632423543772848170429916717,
+                 scale=1.0507009873554804934193349852946, inplace=False):
+        super(SELU, self).__init__()
+
+        self.scale = scale
+        self.elu = nn.ELU(alpha=alpha, inplace=inplace)
+
+    def forward(self, x):
+        return self.scale * self.elu(x)
+
+
+def ConvSELU(i, o, kernel_size=3, padding=0, p=0.):
     model = [nn.Conv1d(i, o, kernel_size=kernel_size, padding=padding),
-             nn.ReLU(inplace=True)
+             SELU(inplace=True)
              ]
     if p > 0.:
         model += [nn.Dropout(p)]
@@ -40,11 +53,11 @@ class MolEncoder(nn.Module):
 
         self.i = i
 
-        self.conv_1 = ConvReLU(i, 9, kernel_size=9)
-        self.conv_2 = ConvReLU(9, 9, kernel_size=9)
-        self.conv_3 = ConvReLU(9, 10, kernel_size=11)
+        self.conv_1 = ConvSELU(i, 9, kernel_size=9)
+        self.conv_2 = ConvSELU(9, 9, kernel_size=9)
+        self.conv_3 = ConvSELU(9, 10, kernel_size=11)
         self.dense_1 = nn.Sequential(nn.Linear((c - 29 + 3) * 10, 435),
-                                     nn.ReLU(inplace=True))
+                                     SELU(inplace=True))
 
         self.lmbd = Lambda(435, o)
 
@@ -57,7 +70,7 @@ class MolEncoder(nn.Module):
 
         return self.lmbd(out)
 
-    def vae_loss(self, x, x_decoded_mean):
+    def vae_loss(self, x_decoded_mean, x):
         z_mean, z_log_var = self.lmbd.mu, self.lmbd.log_v
 
         bce = nn.BCELoss(size_average=True)
@@ -74,7 +87,7 @@ class MolDecoder(nn.Module):
         super(MolDecoder, self).__init__()
 
         self.latent_input = nn.Sequential(nn.Linear(i, i),
-                                          nn.ReLU(inplace=True))
+                                          SELU(inplace=True))
         self.repeat_vector = Repeat(o)
         self.gru = nn.GRU(i, 501, 3, batch_first=True)
         self.decoded_mean = TimeDistributed(nn.Sequential(nn.Linear(501, c),
