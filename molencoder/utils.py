@@ -3,6 +3,7 @@ import shutil
 
 import torch
 import torch.nn as nn
+from torch.nn import init
 from torch.autograd import Variable
 from torch.optim.optimizer import Optimizer
 
@@ -146,7 +147,7 @@ def validate_model(val_loader, encoder, decoder, dtype):
         y_var = encoder(x_var)
         z_var = decoder(y_var)
 
-        avg_val_loss += encoder.vae_loss(x_var, z_var).data
+        avg_val_loss += encoder.vae_loss(z_var, x_var).data
     avg_val_loss /= t
     print('average validation loss: %.4f' % avg_val_loss[0])
     return avg_val_loss[0]
@@ -171,3 +172,9 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'model_best.pth.tar')
+
+
+def initialize_weights(m):
+    if (isinstance(m, nn.Linear) or isinstance(m, nn.GRU) or
+       isinstance(m, nn.Conv1d)):
+        init.xavier_uniform(m.weight.data)
