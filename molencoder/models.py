@@ -41,7 +41,7 @@ class Lambda(nn.Module):
     def forward(self, x):
         self.mu = self.z_mean(x)
         self.log_v = self.z_log_var(x)
-        eps = self.scale * Variable(torch.randn(*self.log_v.size())
+        eps = self.scale * Variable(torch.randn(*self.log_v.size()),
                                     ).type_as(self.log_v)
         return self.mu + torch.exp(self.log_v / 2.) * eps
 
@@ -74,7 +74,7 @@ class MolEncoder(nn.Module):
         z_mean, z_log_var = self.lmbd.mu, self.lmbd.log_v
 
         bce = nn.BCELoss(size_average=True)
-        xent_loss = self.i * bce(x_decoded_mean, x)
+        xent_loss = self.i * bce(x_decoded_mean, x.detach())
         kl_loss = -0.5 * torch.mean(1. + z_log_var - z_mean ** 2. -
                                     torch.exp(z_log_var))
 
