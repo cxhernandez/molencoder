@@ -2,3 +2,5 @@ torch
 numpy
 pandas
 progressbar2
+h5py
+yaml
