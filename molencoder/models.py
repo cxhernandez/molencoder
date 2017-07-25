@@ -41,7 +41,7 @@ class Lambda(nn.Module):
     def forward(self, x):
         self.mu = self.z_mean(x)
         self.log_v = self.z_log_var(x)
-        eps = self.scale * Variable(torch.randn(*self.log_v.size()),
+        eps = self.scale * Variable(torch.randn(*self.log_v.size())
                                     ).type_as(self.log_v)
         return self.mu + torch.exp(self.log_v / 2.) * eps
 
