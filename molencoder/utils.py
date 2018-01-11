@@ -127,7 +127,7 @@ def train_model(train_loader, encoder, decoder, optimizer, dtype,
         y_var = encoder(x_var)
         z_var = decoder(y_var)
 
-        loss = encoder.vae_loss(x_var, z_var)
+        loss = encoder.vae_loss(z_var, x_var)
         if (t + 1) % print_every == 0:
             print('t = %d, loss = %.4f' % (t + 1, loss.data[0]))
 
