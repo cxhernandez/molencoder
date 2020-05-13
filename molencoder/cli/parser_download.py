@@ -6,7 +6,7 @@ DEFAULTS = {
         "outfile": "data/chembl22.h5"
     },
     "zinc12": {
-        "uri": "http://zinc.docking.org/db/bysubset/13/13_prop.xls",
+        "uri": "http://zinc12.docking.org/db/bysubset/13/13_prop.xls",
         "outfile": "data/zinc12.h5"
     }
 }
